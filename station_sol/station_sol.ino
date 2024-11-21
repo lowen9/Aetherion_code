@@ -13,8 +13,14 @@
 #define FREQUENCY 433E6
 
 SPIClass *vspi = NULL;
+uint8_t LoRa_status = 0;
+
+void init_led_lora(){
+  pinMode(LED_BUILTIN, OUTPUT);
+}
 
 void init_lora(){
+  digitalWrite(LED_BUILTIN, 0);
   // vspi = new SPIClass(VSPI);
   // vspi->begin(SCLK_PIN, MISO_PIN, MOSI_PIN, CS_PIN);
 
@@ -45,6 +51,7 @@ void loop_lora(){
 
     packetSize = LoRa.parsePacket();
     if(packetSize){
+      digitalWrite(LED_BUILTIN, 1);
       Serial.print("$Aetherion: ");
       while(LoRa.available()){
         Serial.print((char)LoRa.read());
@@ -53,6 +60,7 @@ void loop_lora(){
       Serial.print(LoRa.packetRssi());
       Serial.println(" */");
     }
+    digitalWrite(LED_BUILTIN, 0);
   }
 }
 
@@ -60,6 +68,7 @@ void setup() {
   Serial.begin(115200);
   while(!Serial);
 
+  init_led_lora();
   init_lora();
 
 }
