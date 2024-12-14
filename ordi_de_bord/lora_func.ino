@@ -17,59 +17,37 @@ static void init_lora(){
   LoRa.setPins(CS_PIN, LORA_RST_PIN,LORA_DIO);
   LoRa.setSPI(*vspi);
 
-  LoRa.setGain(20);               //de base 17
-  LoRa.setTxPower(10);            //10dBm = 10mW, 14dBm ~= 25mW
+  LoRa.setTxPower(20);            //10dBm = 10mW, 14dBm ~= 25mW
   LoRa.setSpreadingFactor(10);    //de base 7
-  LoRa.setSignalBandwidth(7.8E3); //de base 125E3
+  LoRa.setSignalBandwidth(20.8E3); //de base 125E3
   LoRa.crc();                     //de nocrc()
 
   Serial.println("init LoRa Sensor");
 
   if(!LoRa.begin(FREQUENCY)){
     Serial.println("Starting LoRa Failed!");
-    delay(1000);
+    BUG_LoRa = 1;
   }
 }
 
 unsigned long lastTime_dlora = 0;
+char msgBuffer[200];
+byte local_addr = 0xAA;
+
 static void lora_data(){
-  if ((millis() - lastTime_dlora) >= 100) //To stream at 10Hz without using additional timers
+  if ((millis() - lastTime_dlora) >= 50) //To stream at 20Hz without using additional timers
   {
     lastTime_dlora = millis();
-    // Serial.println("Send message to base");
+
+    if(BUG_LoRa) BUG_LoRa = 0;
+
+    sprintf(msgBuffer, "%d,%d,%.6f,%.6f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f", gps_status, gps_number, latitude, longitude, alt, speed, euler.x(), euler.y(), euler.z(), acc.x(), acc.y(), acc.z(),hdop);
+    Serial.println(msgBuffer); //For debuging
     LoRa.beginPacket();
-    //Gps status
-    LoRa.print(gps_status);
-    LoRa.print(",");
-    //latitude
-    LoRa.print(latitude,6);
-    LoRa.print(",");
-    //longitude
-    LoRa.print(longitude,6);
-    LoRa.print(",");
-    //altitude
-    LoRa.print(alt);
-    LoRa.print(",");
-    //vitesse
-    LoRa.print(speed);
-    LoRa.print(",");
-    //gyro x
-    LoRa.print(g_x);
-    LoRa.print(",");
-    //gyro y
-    LoRa.print(g_y);
-    LoRa.print(",");
-    //gyro z
-    LoRa.print(g_z);
-    LoRa.print(",");
-    //accel x
-    LoRa.print(a_x);
-    LoRa.print(",");
-    //accel y
-    LoRa.print(a_y);
-    LoRa.print(",");
-    //accel z
-    LoRa.print(a_z);
+    LoRa.write(local_addr);
+    LoRa.write(strlen(msgBuffer));
+    fed_GPS();
+    LoRa.print(msgBuffer);
     LoRa.endPacket(); 
   }
 }
