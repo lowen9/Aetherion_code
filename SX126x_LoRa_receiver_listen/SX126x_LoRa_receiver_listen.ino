@@ -1,3 +1,5 @@
+#include <SX126x.h>
+
 #define SCLK_PIN 5
 #define MISO_PIN 3
 #define MOSI_PIN 6
@@ -8,14 +10,15 @@
 #define LORA_BUSY_PIN 34
 #define LORA_DIO 33
 
-#define FREQUENCY 868E6
-
 SX126x LoRa;
 
 SPIClass *vspi = NULL;
 
-static void init_lora(){
-  digitalWrite(LED_BUILTIN, 0);
+void setup() {
+
+  // Begin serial communication
+  Serial.begin(115200);
+  delay(1000);
 
   vspi = new SPIClass(VSPI);
   vspi->begin(SCLK_PIN, MISO_PIN, MOSI_PIN, CS_PIN);
@@ -36,7 +39,7 @@ static void init_lora(){
   uint32_t tcxoDelay = SX126X_TCXO_DELAY_10;
   LoRa.setDio3TcxoCtrl(dio3Voltage, tcxoDelay);
   
-  // Set frequency to 868 Mhz
+  // Set frequency to 915 Mhz
   Serial.println("Set frequency to 868 Mhz");
   LoRa.setFrequency(868000000);
 
@@ -47,7 +50,7 @@ static void init_lora(){
   // Configure modulation parameter including spreading factor (SF), bandwidth (BW), and coding rate (CR)
   Serial.println("Set modulation parameters:\n\tSpreading factor = 7\n\tBandwidth = 125 kHz\n\tCoding rate = 4/5");
   uint8_t sf = 7;
-  uint32_t bw = 250000;
+  uint32_t bw = 125000;
   uint8_t cr = 4;
   LoRa.setLoRaModulation(sf, bw, cr);
 
@@ -63,95 +66,48 @@ static void init_lora(){
   Serial.println("Set syncronize word to 0x3444");
   LoRa.setSyncWord(0x3444);
 
-  // LoRa.onReceive(irq_lora); //Appel de la routine d'interruption;
-  Serial.println("init LoRa succeeded");
+  Serial.println("\n-- LORA RECEIVER LISTEN --\n");
+  
 }
 
-void irq_lora(int packetSize){
-  // if(!packetSize) return;
+void loop() {
 
-  // lora_flag = true;
-  // sender = LoRa.read();
-  // msg_lenght = LoRa.read();
+  LoRa.request();
+  LoRa.wait();
+  // Check for incoming LoRa packet
+  // if(lora_flag){
+    // lora_flag = false;
+    // Put received packet to message and counter variable
+    // const uint8_t msgLen = LoRa.available();
+    // if (msgLen) {
+      const uint8_t msgLen = LoRa.available();
+      char message[msgLen];
+      uint8_t counter;
+      uint8_t i=0;
+      while (LoRa.available()){
+        message[i++] = LoRa.read();
+      }
+      // counter = LoRa.read();
 
-  // incoming = "";
+      // Print received message and counter in serial
+      Serial.print(message);
+      Serial.print("  ");
+      Serial.println(counter);
 
-  // while(LoRa.available()){
-  //   incoming += (char)LoRa.read();
+      // Print packet/signal status including package RSSI and SNR
+      Serial.print("Packet status: RSSI = ");
+      Serial.print(LoRa.packetRssi());
+      Serial.print(" dBm | SNR = ");
+      Serial.print(LoRa.snr());
+      Serial.println(" dB");
+
+      // Show received status in case CRC or header error occur
+      uint8_t status = LoRa.status();
+      if (status == SX126X_STATUS_RX_TIMEOUT) Serial.println("Receive timeout");
+      else if (status == SX126X_STATUS_CRC_ERR) Serial.println("CRC error");
+      else if (status == SX126X_STATUS_HEADER_ERR) Serial.println("Packet header error");
+      Serial.println();
+    // }
   // }
-
-  // if(msg_lenght != incoming.length()){
-  //   lora_flag = false;
-  //   return;
-  // }
-
-  // if(sender != sender_addr){
-  //   lora_flag = false;
-  //   return;
-  // }
-
-  // lora_SRRI = LoRa.packetRssi();
-
-  //   return;
-}
-
-unsigned long lastTime_dlora = 0;
-
-static byte msg_lenght = 0;
-static byte gps_status = 0;
-
-String incoming = "";
-String msg = "";
-
-void lora_update(){
-  if ((millis() - lastTime_dlora) >= 80) //To stream at 12,5Hz without using additional timers
-  {
-    lastTime_dlora = millis();
-
-    LoRa.request();
-    LoRa.wait(150);
-
-    lora_status = 0;
-    msg_lenght = LoRa.read();
-    gps_status = LoRa.read();
-
-    incoming = "";
-    while(LoRa.available()){
-      if(!lora_status) lora_status = 1;
-      incoming += (char)LoRa.read();
-    }
-
-    if(incoming.length()) msg = incoming;
-
-    if(msg_lenght != incoming.length()){
-      return;
-    }
-
-    // Serial.print("lml: ");
-    // Serial.print(msg_lenght);
-    // Serial.print(",");
-    // Serial.print("lmc: ");
-    // Serial.print(incoming.length());
-    // Serial.print(",");
-  }
-}
-
-unsigned long lastTime_clora = 0;
-
-void lora_print(){
-  if ((millis() - lastTime_clora) >= 25) //To stream at 10Hz without using additional timers
-  {
-    lastTime_clora = millis();
-
-    Serial.print("$Aetherion: ");
-    lora_status ? Serial.print(gps_status) : Serial.print("0");
-    Serial.print(",");
-    Serial.print(msg);
-    Serial.print(",");
-    Serial.print(lora_status);
-    Serial.print(",");
-    lora_status ? Serial.print(LoRa.packetRssi()) : Serial.print("NaN");
-    Serial.println(" */");
-
-  }
+ 
 }

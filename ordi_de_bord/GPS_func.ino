@@ -1,6 +1,6 @@
 #define GPS_BAUD 9600
 
-static void GPSDelay(unsigned long ms) //bloquant ?
+static void GPSDelay(unsigned long ms) //bloquant ? --oui totalement
 {
   unsigned long start = millis();
   do 
@@ -48,7 +48,7 @@ static void read_GPS(){
       gps_number = gps.satellites.value();
     }
     else{
-      Serial.println("Gps invalid");
+      // Serial.println("Gps invalid");
     } 
     gps_number ? gps_status = 1 : gps_status = 0;
 
@@ -56,7 +56,6 @@ static void read_GPS(){
     if(gps.speed.isValid()) speed = gps.speed.kmph();
     if(gps.hdop.isValid()) hdop = gps.hdop.hdop();
   }
-
 }
 
 static void fed_GPS(){

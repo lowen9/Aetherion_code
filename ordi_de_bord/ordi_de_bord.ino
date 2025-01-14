@@ -10,7 +10,7 @@
 #include <Wire.h>
 
 #include <SPI.h>
-#include <LoRa.h>
+#include <SX127x.h>
 
 #define SDA_PIN 38
 #define SCL_PIN 39

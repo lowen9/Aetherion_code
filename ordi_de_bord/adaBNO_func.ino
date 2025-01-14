@@ -16,12 +16,12 @@ static void init_adaBNO(){
   // bno.set
 
   Serial.println("Calibrer l'accélero !");
-  while(accel < 3){
-    Serial.print("En calibration: ");
-    bno.getCalibration(&systeme, &gyro, &accel, &mag);
-    Serial.println(accel, DEC);
-    delay(BNO055_SAMPLERATE_DELAY_MS*2);
-  }
+  // while(accel < 3){
+  //   Serial.print("En calibration: ");
+  //   bno.getCalibration(&systeme, &gyro, &accel, &mag);
+  //   Serial.println(accel, DEC);
+  //   delay(BNO055_SAMPLERATE_DELAY_MS*2);
+  // }
 }
 
 unsigned long lastTime_BNO = 0;

@@ -6,7 +6,7 @@
 // #define pin_SDA 8
 // #define pin_SCL 9
 
-#define pin_RST 4
+#define pin_RST 3
 
 void pcaselect(uint8_t i) {
   if (i > 3) return;
