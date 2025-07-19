@@ -8,8 +8,7 @@
 #define LORA_BUSY_PIN 34
 #define LORA_DIO 33
 
-#define FREQUENCY 865687500
-// #define FREQUENCY 868E6
+#define FREQUENCY 865937500
 
 SX126x LoRa;
 
@@ -146,7 +145,7 @@ void lora_print(){
   {
     lastTime_clora = millis();
 
-    Serial.print("$MC-4: ");
+    Serial.print("$Aetherion: ");
     lora_status ? Serial.print(gps_status) : Serial.print("0");
     Serial.print(",");
     lora_status ? Serial.print(msg) : Serial.print(default_msg);

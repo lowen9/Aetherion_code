@@ -12,7 +12,7 @@ static void GPSDelay(unsigned long ms) //bloquant ? --oui totalement
 
 static void init_GPS(){
   Serial.println("init GPS");
-  gpsSerial.begin(GPS_BAUD);
+  gpsSerial.begin(GPS_BAUD, SERIAL_8N1, GPS_RX_PIN, GPS_TX_PIN); //Rx, Tx serial for GPS
   Serial.print("Starting GPS");
 
   unsigned int time_start = millis();
@@ -31,18 +31,18 @@ static void init_GPS(){
 unsigned long lastTime_GPS = 0;
 
 static void read_GPS(){
-  if ((millis() - lastTime_GPS) >= 50) //To stream at 20Hz without using additional timers  50
+  if ((millis() - lastTime_GPS) >= 50) //Read the GPS 20Hz
   {
     lastTime_GPS = millis();
 
-    // Serial.println(gps.failedChecksum());
+    // Serial.println(gps.failedChecksum()); // FOR Debuging
 
     if(gpsSerial.available()){
       gps.encode(gpsSerial.read());
     }
 
     if(gps.location.isValid()){
-      if(BUG_GPS) BUG_GPS = 0;
+      // if(BUG_GPS) BUG_GPS = 0;
       latitude = gps.location.lat();
       longitude = gps.location.lng();
       gps_number = gps.satellites.value();
@@ -52,7 +52,6 @@ static void read_GPS(){
     } 
     gps_number ? gps_status = 1 : gps_status = 0;
 
-    if(gps.altitude.isValid()) alt = gps.altitude.meters();
     if(gps.speed.isValid()) speed = gps.speed.kmph();
     if(gps.hdop.isValid()) hdop = gps.hdop.hdop();
   }

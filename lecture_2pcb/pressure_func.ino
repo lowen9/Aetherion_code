@@ -1,7 +1,7 @@
 uint8_t cmd[3] = {0xAA, 0x00, 0x00}; // command to be sent
 
-void start_cap(){
-  Wire.beginTransmission(MPRADDR);
+void start_cap(uint8_t cp_nb){
+  Wire.beginTransmission(cp_nb);
   Wire.write(cmd, 3); //write cmd to sensor
   Wire.endTransmission();
 }
@@ -13,11 +13,11 @@ double pmax = 25; // maximum value of pressure range [bar, psi, kPa, etc.]
 double pmin = 0; // minimum value of pressure range [bar, psi, kPa, etc.]
 float PSI_to_hPa = 68.947572932; // Constant: PSI to hPa conversion
 
-double readPressureP(){ //Pipile version of reading capteur
+double readPressureP(uint8_t cp_nb){ //Pipile version of reading capteur
   double pression = 0;
   double press_counts = 0; // digital pressure reading [counts]
 
-  Wire.requestFrom(MPRADDR, 4);
+  Wire.requestFrom(cp_nb, 4);
   for(int i = 0; i < 4; i++){
     data[i] = Wire.read();
   }
@@ -28,15 +28,15 @@ double readPressureP(){ //Pipile version of reading capteur
   return pression;
 }
 
-double readPressure(){
+double readPressure(uint8_t cp_nb){
   double pression = 0;
   double press_counts = 0; // digital pressure reading [counts]
-  Wire.beginTransmission(MPRADDR);
+  Wire.beginTransmission(cp_nb);
   Wire.write(cmd, 3); //write cmd to sensor
   Wire.endTransmission();
   delay(10);
 
-  Wire.requestFrom(MPRADDR, 4);
+  Wire.requestFrom(cp_nb, 4);
   for(int i = 0; i < 4; i++){
     data[i] = Wire.read();
   }

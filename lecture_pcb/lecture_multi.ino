@@ -29,6 +29,7 @@ void lecture_multi(){
 
 unsigned long start = 0;
 unsigned long delta = 0;
+char msgBuffer[200];
 
 void lecture_pipeline(){ //Lecture pipeline des capteurs (la 1er lecture est fausse!)
   start = millis();
@@ -48,19 +49,23 @@ void lecture_pipeline(){ //Lecture pipeline des capteurs (la 1er lecture est fau
   pression4 = readPressureP();
   start_cap();
 
-  Serial.print("/*");
-  Serial.print(pression1);
-  Serial.print(",");
-  Serial.print(pression2);
-  Serial.print(",");
-  Serial.print(pression3);
-  Serial.print(",");
-  Serial.print(pression4);
-  Serial.println("");
+  sprintf(msgBuffer, "/*%d,%f,%f,%f,%f\n", start, pression1, pression2, pression3, pression4);
+
+  Serial.print(msgBuffer);
+  
+  if (!log_file) {
+    Serial.println("Failed to open file for appending");
+    return;
+  }
+  if (log_file.print(msgBuffer)) {
+    Serial.println("Message appended");
+  } else {
+    Serial.println("Append failed");
+  }
 
   delta = millis()-start;
-  if(delta > 20) delta = 20;
-  // Serial.println(delta);
-  delay(20-delta);
+  if(delta > 16) delta = 16;
+  Serial.println(delta);
+  delay(16-delta);
 }
 
